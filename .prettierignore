@@ -1,0 +1,9 @@
+.next
+.captures
+node_modules
+public
+package-lock.json
+src/features/globe/data/landMask.ts
+*.png
+*.jpeg
+*.jpg
