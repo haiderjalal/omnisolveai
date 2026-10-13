@@ -1,0 +1,584 @@
+@import "tailwindcss";
+
+/* ------------------------------------------------------------------ */
+/* Design tokens — derived from the OmniSolve logo (indigo → teal)     */
+/* Sampled from the logo: indigo #15144E, teal #0A9EA2, bright #00C1AC  */
+/* ------------------------------------------------------------------ */
+@theme {
+  --color-void: #050816;
+  --color-deep: #0a1030;
+  --color-ink: #0d1538;
+  --color-panel: #121b4a;
+
+  --color-indigo-brand: #15144e;
+  --color-glow: #6f72f5; /* logo indigo, lifted for dark surfaces */
+  --color-teal-brand: #0a9ea2;
+  --color-teal-ink: #07666a; /* teal dark enough for text on light surfaces (≥ 5:1) */
+  --color-teal: #00c1ac;
+  --color-aqua: #38e8dc;
+
+  --color-fg: #e8ecf8;
+  --color-muted: #a3abcd;
+  --color-subtle: #7a83ab;
+
+  --font-display: var(--font-sora), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-smooth: cubic-bezier(0.65, 0, 0.35, 1);
+
+  --shadow-glow: 0 0 60px -10px rgb(56 232 220 / 0.45);
+}
+
+:root {
+  --gradient-brand: linear-gradient(115deg, #8587ff 0%, #45b6f2 48%, #28ecd2 100%);
+  --nav-h: 4.5rem;
+  color-scheme: dark;
+}
+
+/* ------------------------------------------------------------------ */
+/* Base                                                                */
+/* ------------------------------------------------------------------ */
+html {
+  background: var(--color-void);
+}
+
+body {
+  background: var(--color-void);
+  color: var(--color-fg);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  overflow-x: clip;
+}
+
+::selection {
+  background: rgb(0 193 172 / 0.35);
+  color: #fff;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-aqua);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+/* Lenis recommended base rules */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+/* ------------------------------------------------------------------ */
+/* Utilities                                                           */
+/* ------------------------------------------------------------------ */
+@utility container-x {
+  width: 100%;
+  max-width: 78rem;
+  margin-inline: auto;
+  padding-inline: clamp(1.25rem, 4vw, 2.5rem);
+}
+
+@utility text-gradient {
+  background-image: var(--gradient-brand);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+@utility glass {
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.065), rgb(255 255 255 / 0.022));
+  border: 1px solid rgb(255 255 255 / 0.09);
+  backdrop-filter: blur(16px) saturate(150%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.07),
+    0 30px 60px -34px rgb(0 0 0 / 0.7);
+}
+
+@utility glass-strong {
+  background: linear-gradient(180deg, rgb(15 23 58 / 0.95), rgb(8 12 36 / 0.97));
+  border: 1px solid rgb(255 255 255 / 0.1);
+  backdrop-filter: blur(24px) saturate(150%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.08),
+    0 40px 80px -30px rgb(0 0 0 / 0.8);
+}
+
+@utility eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.4rem 0.85rem;
+  border-radius: 999px;
+  border: 1px solid rgb(56 232 220 / 0.28);
+  background: rgb(56 232 220 / 0.07);
+  color: var(--color-aqua);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.eyebrow::before {
+  content: "";
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 999px;
+  background: var(--color-aqua);
+  box-shadow: 0 0 12px var(--color-aqua);
+}
+
+/* Cursor-following spotlight on cards (vars set by <TiltCard>) */
+.spotlight {
+  position: relative;
+  isolation: isolate;
+}
+.spotlight::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: radial-gradient(
+    380px circle at var(--mx, 50%) var(--my, 50%),
+    rgb(56 232 220 / 0.16),
+    transparent 62%
+  );
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  pointer-events: none;
+}
+.spotlight:hover::before,
+.spotlight:focus-within::before {
+  opacity: 1;
+}
+
+/* Rotating light-beam border (used on the featured plan) */
+@property --beam-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+.beam-border {
+  position: relative;
+}
+.beam-border::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: conic-gradient(
+    from var(--beam-angle),
+    transparent 0 62%,
+    #6f72f5 74%,
+    #38e8dc 88%,
+    transparent 100%
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: beam-spin 5s linear infinite;
+  pointer-events: none;
+}
+@keyframes beam-spin {
+  to {
+    --beam-angle: 360deg;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Text + element reveal system                                         */
+/* Text is split into words/chars on the SERVER (see <SplitText>), so   */
+/* the animation needs no layout measurement and never blocks LCP.      */
+/* Hidden states only exist when JS is on and motion is allowed (.js    */
+/* is set by an inline script before first paint, .rm = reduced motion).*/
+/* A timed fallback un-hides everything if hydration ever fails.        */
+/* ------------------------------------------------------------------ */
+.split-word {
+  display: inline-block;
+  white-space: nowrap;
+  vertical-align: top;
+}
+.split-mask {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+  /* room for descenders so the mask never clips them */
+  padding-bottom: 0.14em;
+  margin-bottom: -0.14em;
+}
+.split-unit {
+  display: inline-block;
+  will-change: transform;
+}
+
+html.js:not(.rm) [data-split="view"]:not([data-in]) .split-unit {
+  transform: translateY(112%) rotate(5deg);
+  opacity: 0;
+}
+html.js:not(.rm) [data-split="view"] .split-unit {
+  transition:
+    transform 0.95s var(--ease-expo) calc(var(--d, 0ms) + var(--i, 0) * 38ms),
+    opacity 0.6s ease calc(var(--d, 0ms) + var(--i, 0) * 38ms);
+}
+
+/* On-load variant (hero): pure CSS keyframes, starts at first paint */
+html.js:not(.rm) [data-split="load"] .split-unit {
+  animation: split-rise 0.85s var(--ease-expo) both;
+  animation-delay: calc(var(--d, 0ms) + var(--i, 0) * 14ms);
+}
+@keyframes split-rise {
+  from {
+    transform: translateY(112%) rotate(5deg);
+    opacity: 0;
+    filter: blur(6px);
+  }
+  to {
+    transform: none;
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+html.js:not(.rm) [data-reveal]:not([data-in]) {
+  opacity: 0;
+  transform: translate3d(0, 28px, 0) scale(0.985);
+  filter: blur(8px);
+}
+html.js:not(.rm) [data-reveal] {
+  transition:
+    opacity 0.8s ease calc(var(--d, 0ms) + var(--i, 0) * 70ms),
+    transform 1s var(--ease-expo) calc(var(--d, 0ms) + var(--i, 0) * 70ms),
+    filter 0.8s ease calc(var(--d, 0ms) + var(--i, 0) * 70ms);
+}
+
+html.js:not(.rm) [data-load-fade] {
+  animation: load-fade 1.1s var(--ease-expo) both;
+  animation-delay: var(--d, 0ms);
+}
+@keyframes load-fade {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 22px, 0);
+    filter: blur(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: blur(0);
+  }
+}
+
+/* Failsafe: if hydration never marks things ready, show everything after 4s */
+html.js:not(.rm):not(.ready) [data-split="view"] .split-unit,
+html.js:not(.rm):not(.ready) [data-reveal],
+html.js:not(.rm):not(.ready) [data-fragment],
+html.js:not(.rm):not(.ready) .scrub-word {
+  animation: failsafe-show 0s 4s forwards;
+}
+@keyframes failsafe-show {
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+/* Odometer digits: a strip of 0–9 that slides to its value when revealed */
+.odo {
+  display: inline-block;
+  height: 1em;
+  overflow: hidden;
+  line-height: 1;
+  vertical-align: top;
+}
+.odo-col {
+  display: flex;
+  flex-direction: column;
+  transform: translateY(calc(var(--digit) * -1em));
+}
+.odo-col > span {
+  display: block;
+  height: 1em;
+  line-height: 1;
+}
+html.js:not(.rm) [data-odo]:not([data-in]) .odo-col {
+  transform: translateY(0);
+}
+html.js:not(.rm) [data-odo] .odo-col {
+  transition: transform 1.9s var(--ease-expo) calc(var(--i, 0) * 110ms + 150ms);
+}
+
+/* SVG line-draw: paths use pathLength="1", so one dash value fits every shape */
+.draw {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+}
+.pop {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+html.js:not(.rm) [data-draw]:not([data-in]) .draw {
+  stroke-dashoffset: 1;
+}
+html.js:not(.rm) [data-draw] .draw {
+  transition: stroke-dashoffset 1.8s var(--ease-expo) calc(var(--i, 0) * 120ms);
+}
+html.js:not(.rm) [data-draw]:not([data-in]) .pop {
+  transform: scale(0);
+  opacity: 0;
+}
+html.js:not(.rm) [data-draw] .pop {
+  transition:
+    transform 0.9s var(--ease-expo) calc(0.5s + var(--i, 0) * 90ms),
+    opacity 0.6s ease calc(0.5s + var(--i, 0) * 90ms);
+}
+
+/* Progress bars: fill from 0 to --v when revealed */
+.bar-fill {
+  transform: scaleX(var(--v, 1));
+  transform-origin: left;
+}
+html.js:not(.rm) [data-reveal]:not([data-in]) .bar-fill {
+  transform: scaleX(0);
+}
+html.js:not(.rm) .bar-fill {
+  transition: transform 1.9s var(--ease-expo) 0.3s;
+}
+
+/* Scroll-scrubbed words / fragments start hidden only when the scrubber will actually run */
+html.js:not(.rm) .scrub-word {
+  opacity: 0.56;
+}
+html.js:not(.rm) [data-fragment] {
+  opacity: 0;
+}
+
+/* ------------------------------------------------------------------ */
+/* Misc motion                                                         */
+/* ------------------------------------------------------------------ */
+.shimmer {
+  background-size: 220% 100%;
+  animation: shimmer 5.5s ease-in-out infinite;
+}
+@keyframes shimmer {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes scroll-cue {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(200%);
+  }
+}
+
+@keyframes float-y {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -10px, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shimmer,
+  .beam-border::after {
+    animation: none;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Native <details> accordion with animated height (progressive)       */
+/* ------------------------------------------------------------------ */
+.faq-item {
+  interpolate-size: allow-keywords;
+}
+.faq-item::details-content {
+  block-size: 0;
+  overflow: clip;
+  transition:
+    block-size 0.5s var(--ease-expo),
+    content-visibility 0.5s allow-discrete;
+}
+.faq-item[open]::details-content {
+  block-size: auto;
+}
+.faq-item summary {
+  list-style: none;
+}
+.faq-item summary::-webkit-details-marker {
+  display: none;
+}
+.faq-item .faq-icon {
+  transition: transform 0.5s var(--ease-expo);
+}
+.faq-item[open] .faq-icon {
+  transform: rotate(45deg);
+}
+
+/* ------------------------------------------------------------------ */
+/* 3D service carousel. Layout is pure CSS (container-query sizing +   */
+/* transforms) so the server-rendered HTML is already correct; JS only */
+/* turns the ring by setting --angle. Reduced motion → plain grid.     */
+/* ------------------------------------------------------------------ */
+.carousel {
+  container-type: inline-size;
+  position: relative;
+  height: 27rem;
+  perspective: 1900px;
+}
+.carousel-ring {
+  --w: clamp(15rem, 27cqw, 21rem);
+  --r: calc(var(--w) * 1.02);
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  transform: translateZ(calc(var(--r) * -1)) rotateY(calc(var(--angle, 0) * -1deg));
+  will-change: transform;
+}
+.carousel-card {
+  --w: clamp(15rem, 27cqw, 21rem);
+  --r: calc(var(--w) * 1.02);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--w);
+  height: 24rem;
+  margin: -12rem 0 0 calc(var(--w) * -0.5);
+  transform: rotateY(calc(var(--i) * 60deg)) translateZ(var(--r));
+  /* near-opaque so the globe never muddies the text; back-facing cards are not drawn at all */
+  background: linear-gradient(180deg, rgb(16 24 60 / 0.92), rgb(8 12 36 / 0.94));
+  backface-visibility: hidden;
+  transition:
+    opacity 0.5s ease,
+    border-color 0.5s ease,
+    box-shadow 0.5s ease;
+}
+.carousel-card[data-active="true"] {
+  border-color: rgb(56 232 220 / 0.55);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.1),
+    0 0 70px -18px rgb(56 232 220 / 0.55);
+}
+.carousel-card .card-cta {
+  opacity: 0;
+  visibility: hidden; /* off-screen cards must not be tabbable */
+  transform: translateY(6px);
+  transition:
+    opacity 0.5s ease,
+    transform 0.6s var(--ease-expo),
+    visibility 0s 0.5s;
+}
+.carousel-card[data-active="true"] .card-cta {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition-delay: 0s;
+}
+@container (max-width: 40rem) {
+  .carousel-ring,
+  .carousel-card {
+    --w: min(80cqw, 19rem);
+  }
+}
+@media (max-height: 780px) {
+  .carousel {
+    height: 23rem;
+  }
+  .carousel-card {
+    height: 21rem;
+    margin-top: -10.5rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .carousel {
+    height: auto;
+    perspective: none;
+  }
+  .carousel-ring {
+    position: static;
+    transform: none;
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  }
+  .carousel-card {
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0;
+    transform: none;
+    opacity: 1 !important;
+  }
+  .carousel-card .card-cta {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+  }
+}
+
+/* Form success: the ring sweeps round, then the check draws */
+.success-ring,
+.success-check {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: draw-stroke 1.1s var(--ease-expo) 0.1s forwards;
+}
+.success-check {
+  animation-duration: 0.7s;
+  animation-delay: 0.85s;
+}
+@keyframes draw-stroke {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .success-ring,
+  .success-check {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Dialog (mobile menu) backdrop */
+dialog.menu-dialog::backdrop {
+  background: rgb(5 8 22 / 0.7);
+  backdrop-filter: blur(6px);
+}
+
+/* Scrollbar */
+html {
+  scrollbar-color: #28306a var(--color-void);
+  scrollbar-width: thin;
+}
